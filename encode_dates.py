@@ -7,5 +7,4 @@ def _encode_dates(X):
     X["weekday"] = X["date"].dt.weekday
     X["hour"] = X["date"].dt.hour
 
-    # Finally we can drop the original columns from the dataframe
     return X
