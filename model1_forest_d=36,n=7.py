@@ -1,9 +1,19 @@
 import pandas as pd
 from pathlib import Path
 from joblib import load
-from encode_dates import _encode_dates
 import holidays
 import numpy as np
+
+def _encode_dates(X):
+    X = X.copy()  # modify a copy of X
+    # Encode the date information from the DateOfDeparture columns
+    X["year"] = X["date"].dt.year
+    X["month"] = X["date"].dt.month
+    X["day"] = X["date"].dt.day
+    X["weekday"] = X["date"].dt.weekday
+    X["hour"] = X["date"].dt.hour
+
+    return X
 
 # Load the trained model
 model_filename = "model1_forest_d=36,n=7.joblib"
