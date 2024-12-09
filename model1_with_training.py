@@ -61,7 +61,7 @@ weather_data = weather_data.resample("H").interpolate(method="linear")  # Interp
 weather_data.reset_index(inplace=True)  # Reset index
 
 # Merge bike data with weather data using a left join
-merged_data = pd.merge(data, weather_data, on="date", how="left")
+merged_data = pd.merge(train_data, weather_data, on="date", how="left")
 
 # Drop redundant date columns to avoid duplicates in the final dataset
 merged_data = merged_data.loc[:, ~merged_data.columns.str.endswith(("_x", "_y"))]
