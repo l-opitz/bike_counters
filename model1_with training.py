@@ -14,7 +14,7 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_squared_error
 
 # Load train data
-data = pd.read_parquet("/kaggle/input/msdb-2024/train.parquet") # to load on Kaggle locally
+data = pd.read_parquet("/kaggle/input/msdb-2024/train.parquet") # to load on Kaggle 
 #data = pd.read_parquet(Path("data") / "train.parquet") # to load locally
 
 def _encode_dates(X):
@@ -47,8 +47,27 @@ def preprocess_data(data):
 # Manipulate train data
 train_data = preprocess_data(data)
 
+# Add weather data
+weather_data = pd.read_csv("/kaggle/input/msdb-2024/external_data.csv") # to load on Kaggle 
+#weather_data = pd.read_csv(Path("data") / "external_data.csv") # to load locally
+
+weather_data["date"] = pd.to_datetime(weather_data["date"], errors="coerce")
+weather_data = _encode_dates(weather_data)
+weather_data = weather_data.drop_duplicates(subset="date") # Drop duplicate rows based on the 'date' column
+
+# Interpolate linearly to get from 3 hour data to 1 hour data
+weather_data.set_index("date", inplace=True)  # Set date as the index
+weather_data = weather_data.resample("H").interpolate(method="linear")  # Interpolate missing values
+weather_data.reset_index(inplace=True)  # Reset index
+
+# Merge bike data with weather data using a left join
+merged_data = pd.merge(data, weather_data, on="date", how="left")
+
+# Drop redundant date columns to avoid duplicates in the final dataset
+merged_data = merged_data.loc[:, ~merged_data.columns.str.endswith(("_x", "_y"))]
+
 # Extract train and validate data
-def get_train_data(data = train_data, _target_column_name = "log_bike_count"):
+def get_train_data(data = merged_data, _target_column_name = "log_bike_count"):
     # Sort by date first, so that time based cross-validation would produce correct results
     data = data.sort_values(["date", "counter_name"])
     y_array = data[_target_column_name].values
@@ -111,10 +130,9 @@ results = pd.DataFrame(
         log_bike_count=y_pred,
     )
 )
-output_path = "submission1.csv"
+output_path = "submission.csv"
 results.to_csv(output_path, index=False)
 print(f"Predictions saved to {output_path}")
-
 
 print(f"Train set, RMSE={mean_squared_error(y_train, pipe.predict(X_train), squared=False):.2f}")
 print(f"Valid set, RMSE={mean_squared_error(y_valid, pipe.predict(X_valid), squared=False):.2f}")
