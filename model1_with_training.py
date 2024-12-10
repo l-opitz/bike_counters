@@ -100,7 +100,7 @@ categorical_cols = ["counter_name", "site_name"]
 numerical_encoder = make_pipeline(
     SimpleImputer(strategy="mean"),  # Replace NaNs of weather data with the mean 
     StandardScaler())
-numerical_corr_cols = ["u"]#, "t", "tx12", "tn12", "rafper", "td", "raf10", "ff", "nnuage3", "vv"] # Weather columns with correlation >|0.1| (see EDA)
+numerical_corr_cols = ["u", "t", "tx12", "tn12", "rafper", "td", "raf10", "ff", "nnuage3", "vv"] # Weather columns with correlation >|0.1| (see EDA)
 
 
 binary_cols = ["weekend", "FR_holidays"] # No transformation required, they are already binary
