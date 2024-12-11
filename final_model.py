@@ -144,7 +144,7 @@ results = pd.DataFrame(
         log_bike_count=y_pred,
     )
 )
-output_path = "submission_XGB_without_weather_zeros_dropped,d=10,n=100,l=0.3_with_31days.csv"
+output_path = "submission_final.csv"
 results.to_csv(output_path, index=False)
 print(f"Predictions saved to {output_path}")
 
