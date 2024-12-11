@@ -35,11 +35,12 @@ def preprocess_data(data):
     return data
 
 #%% Load and preprocess train data
-#data = pd.read_parquet("/kaggle/input/msdb-2024/train.parquet") # to load on Kaggle 
-data = pd.read_parquet(Path("data") / "train.parquet") # to load locally
+data = pd.read_parquet("/kaggle/input/msdb-2024/train.parquet") # to load on Kaggle 
+#data = pd.read_parquet(Path("data") / "train.parquet") # to load locally
 train_data = preprocess_data(data)
 
-weather_data = pd.read_csv(Path("data") / "external_data.csv")
+weather_data = pd.read_csv("/kaggle/input/msdb-2024/external_data.csv") # to load on Kaggle
+#weather_data = pd.read_csv(Path("data") / "external_data.csv")
 weather_data["date"] = pd.to_datetime(weather_data["date"], errors="coerce")
 weather_data = _encode_dates(weather_data)
 weather_data = weather_data.drop_duplicates(subset="date")
@@ -81,9 +82,6 @@ def train_test_split_temporal(X, y, delta_threshold="30 days"):
 
 X_train, y_train, X_valid, y_valid = train_test_split_temporal(X, y)
 
-# Best model without weather data
-# 0.72 for  depth = 10, n = 100, lr = 0.3
-
 
 #%% Define preprocessing pipeline
 date_encoder = FunctionTransformer(_encode_dates)
@@ -110,10 +108,6 @@ preprocessor = ColumnTransformer(
     ]
 )
 
-
-# 2. XGB Regressor
-# With weather data
-
 regressor = XGBRegressor(random_state=42, max_depth=10, n_estimators=200, learning_rate=0.3)
 
 preprocessor = ColumnTransformer(
@@ -134,10 +128,8 @@ print(f"Training time for GradientBoosting with weather: {elapsed_time:.2f} seco
 print(f"Train set, RMSE={mean_squared_error(y_train, pipe.predict(X_train), squared=False):.2f}")
 print(f"Valid set, RMSE={mean_squared_error(y_valid, pipe.predict(X_valid), squared=False):.2f}")
 
-# Save predictions
-
-#test_data = pd.read_parquet("/kaggle/input/msdb-2024/final_test.parquet") # to load on Kaggle
-test_data = pd.read_parquet(Path("data") / "final_test.parquet") # to load locally
+test_data = pd.read_parquet("/kaggle/input/msdb-2024/final_test.parquet") # to load on Kaggle
+#test_data = pd.read_parquet(Path("data") / "final_test.parquet") # to load locally
 test_data = preprocess_data(test_data)
 
 merged_data = pd.merge(test_data, weather_data, on="date", how="left") # merge test and weather data
